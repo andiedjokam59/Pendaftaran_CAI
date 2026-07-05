@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Presensi PERMATA CAI (Offline Ready)</title>
+    
+    <!-- PWA & Shortcut Icon Setup Phone Screen -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CAI Presensi">
+    <link rel="apple-touch-icon" href="cai47.jpeg">
+    <link rel="icon" type="image/jpeg" href="cai47.jpeg">
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1d4ed8;
+            --primary-hover: #1e40af;
+            --accent: #0369a1;
+            --bg-main: #f1f5f9; 
+            --bg-card: #ffffff;
+            --text-dark: #0f172a; 
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --success: #2563eb;
+            --shadow: rgba(15, 23, 42, 0.06);
+            --icon-color: #475569;
+            --warning: #0284c7;
+            --warning-hover: #0369a1;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a; 
+            --bg-card: #1e293b; 
+            --text-dark: #f8fafc; 
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --shadow: rgba(0, 0, 0, 0.2);
+            --icon-color: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0; 
+            background-color: var(--bg-main); 
+            color: var(--text-dark);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            overscroll-behavior-y: auto; 
+        }
+
+        .app-container { 
+            width: 100%; max-width: 440px; 
+            background: var(--bg-card); 
+            padding: 32px 24px; border-radius: 24px; 
+            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
+            box-sizing: border-box; margin: 16px;
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .theme-toggle-btn {
+            background: var(--bg-main); border: 1px solid var(--border-color);
+            color: var(--text-dark); padding: 8px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+            width: auto;
+        }
+
+        .net-status { 
+            font-weight: 700; font-size: 11px; padding: 6px 14px; 
+            border-radius: 20px; display: inline-block;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .online { background: rgba(29, 78, 216, 0.12); color: #1d4ed8 !important; }
+        .offline { background: rgba(239, 68, 68, 0.12); color: #ef4444 !important; }
+
+        .brand-header { text-align: center; margin: 10px 0 24px 0; }
+        
+        .brand-logo { 
+            width: 120px; 
+            height: 120px; 
+            object-fit: contain; 
+            border-radius: 16px; 
+            margin-bottom: 16px; 
+            border: 2px solid var(--border-color);
+            background: #ffffff;
+        }
+        
+        .brand-header h2 { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size: 28px; 
+            font-weight: 900; 
+            margin: 0; 
+            letter-spacing: -0.05em; 
+            color: var(--primary); 
+            text-transform: uppercase;
+        }
+        .brand-header p { font-size: 13px; color: var(--accent); font-weight: 600; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
+        
+        input, .btn-primary, .btn-warning, .btn-custom-rekap { 
+            width: 100%; padding: 14px 16px; 
+            border: 1px solid var(--border-color); background: var(--bg-card);
+            color: var(--text-dark); border-radius: 12px; 
+            box-sizing: border-box; font-size: 15px; font-family: inherit;
+            transition: all 0.2s;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.15); }
+
+        .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2); text-align: center; }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-warning { background: var(--warning); color: #ffffff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2); text-align: center; }
+        .btn-warning:hover { background: var(--warning-hover); }
+
+        .btn-custom-rekap {
+            background: transparent; border: 1.5px solid var(--primary); color: var(--primary);
+            font-weight: 700; cursor: pointer; text-align: center; text-transform: uppercase;
+            letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 8px;
+            grid-column: span 6; margin-top: 12px; padding: 12px; font-size: 13px;
+        }
+        .btn-custom-rekap:hover { background: var(--primary); color: #ffffff; }
+
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 0.8px; text-transform: uppercase; }
+        
+        #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
+        #reader button {
+            background-color: var(--primary) !important; color: #ffffff !important; border: none !important;
+            padding: 12px 20px !important; font-size: 14px !important; font-weight: 600 !important;
+            border-radius: 12px !important; cursor: pointer !important; transition: all 0.2s ease !important;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.15) !important; margin: 10px 0 !important; font-family: inherit !important;
+        }
+        #reader button:hover { background-color: var(--primary-hover) !important; }
+
+        .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+
+        .search-results { 
+            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
+            max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 12px; margin-top: 2px;
+            box-shadow: 0 10px 15px -3px var(--shadow); display: none;
+            -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+        }
+        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; color: var(--text-dark); }
+        .search-item:hover { background: var(--bg-main); color: var(--primary); }
+
+        .filter-backdrop-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: transparent; z-index: 998; display: none;
+        }
+
+        .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
+        .btn-icon { 
+            background: transparent; border: 1px solid var(--border-color); 
+            color: var(--text-dark); padding: 10px 0; border-radius: 12px; 
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; gap: 4px; font-size: 9px; font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
+        }
+        
+        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
+
+        .scan-notif-modal {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card); border: 2px solid var(--border-color); color: var(--text-dark);
+            padding: 20px 32px; border-radius: 20px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 10px; z-index: 10005; text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); opacity: 0; visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 260px;
+        }
+        .scan-notif-modal.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        .scan-notif-icon { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .scan-notif-modal.success-status .scan-notif-icon { background: rgba(29, 78, 216, 0.15); color: #1d4ed8; }
+        .scan-notif-modal.error-status .scan-notif-icon { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .scan-notif-title { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .scan-notif-desc { font-size: 13px; color: var(--text-muted); margin: 0; font-weight: 500; }
+        
+        #print-area { display: none; width: 100%; margin-top: 30px; }
+        .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
+        .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 14px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #1d4ed8; padding-bottom: 4px; }
+        
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
+        .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
+        .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; position: relative; }
+
+        .resume-kehadiran-box { background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 12px; margin-bottom: 15px; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+        .resume-row { display: flex; gap: 16px; }
+
+        .waktu-filter-row { grid-column: span 6; display: flex; gap: 6px; margin-bottom: 4px; background: var(--bg-main); padding: 6px; border-radius: 12px; border: 1px dashed var(--border-color); }
+        .waktu-select { flex: 1; padding: 8px 10px; font-size: 12px; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-dark); outline: none; cursor: pointer; font-family: inherit; text-align: center; }
+
+        @media print {
+            body { background: #fff!important; color: #000!important; display: block; }
+            .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .scan-notif-modal, .filter-backdrop-overlay { display: none!important; }
+            #print-area { display: block!important; }
+        }
+    </style>
+</head>
+<body onclick="bukaKunciAudioKonstruktor()">
+
+<div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()"></div>
+
+<div class="app-container">
+    <div class="top-bar">
+        <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
+        <div id="network-indicator" class="net-status online">● Online</div>
+    </div>
+    
+    <div class="brand-header">
+        <img src="cai47.jpeg" alt="Logo CAI" class="brand-logo" id="app-logo">
+        <h2>PERMATA CAI</h2>
+        <p>Sistem Presensi Kegiatan Digital</p>
+    </div>
+
+    <div class="section-title">OPSI 1: SCAN BARCODE</div>
+    <div id="reader"></div>
+
+    <div class="divider">— ATAU —</div>
+
+    <div class="form-group">
+        <label for="search-input">OPSI 2: INPUT MANUAL</label>
+        <input type="text" id="search-input" autocomplete="off" placeholder="Ketik nama peserta untuk mencari..." oninput="cariNamaPintar()" onfocus="cariNamaPintar()" onclick="cariNamaPintar(event)">
+        <div id="search-results-box" class="search-results"></div>
+    </div>
+    
+    <input type="hidden" id="selected-id-generus">
+    <button class="btn-primary" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
+    <button class="btn-warning" onclick="inputManualIziin()">Izin</button>
+
+    <div class="section-title">Menu Rekap & Penyimpanan</div>
+    <div class="action-row">
+        
+        <div class="waktu-filter-row">
+            <select id="filter-rekap-hari" class="waktu-select" onchange="updateHariText()">
+                <option value="SEMUA">-- Semua Hari Acara --</option>
+                <option value="1">Hari Ke-1</option>
+                <option value="2">Hari Ke-2</option>
+                <option value="3">Hari Ke-3</option>
+                <option value="4">Hari Ke-4</option>
+                <option value="5">Hari Ke-5</option>
+                <option value="6">Hari Ke-6</option>
+                <option value="7">Hari Ke-7</option>
+                <option value="8">Hari Ke-8</option>
+                <option value="9">Hari Ke-9</option>
+                <option value="10">Hari Ke-10</option>
+            </select>
+        </div>
+
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            Semua
+        </button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Desa
+        </button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Klp
+        </button>
+        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Simpan
+        </button>
+        
+        <button class="btn-icon" onclick="printSemuaOtomatis()" title="Print Semua">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print
+        </button>
+
+        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Excel
+        </button>
+
+        <button class="btn-custom-rekap" onclick="tarikRekapTotalLangsung()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            Rekap Total Full Acara
+        </button>
+    </div>
+
+    <div id="print-area">
+        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi PERMATA CAI</h3>
+        <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
+        <div id="resume-kehadiran-container"></div>
+        <div id="print-table-container"></div>
+    </div>
+</div>
+
+<div id="scan-modal" class="scan-notif-modal">
+    <div id="scan-modal-icon" class="scan-notif-icon"></div>
+    <div id="scan-modal-title" class="scan-notif-title"></div>
+    <div id="scan-modal-desc" class="scan-notif-desc"></div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const netIndicator = document.getElementById('network-indicator');
+    const searchInput = document.getElementById('search-input');
+    const resultsBox = document.getElementById('search-results-box');
+    const selectedIdInput = document.getElementById('selected-id-generus');
+    const themeBtn = document.getElementById('theme-btn');
+    const globalOverlay = document.getElementById('global-filter-overlay');
+    
+    let semuaDataGenerus = [];
+    let dataAktifRekap = []; 
+    let dataMentahTahunanLog = []; 
+    let dataMasterTahunanOrang = []; 
+    let pengunciScanAktif = false; 
+    let globalAudioCtx = null;
+    let toastTimeout = null;
+
+    function bukaKunciAudioKonstruktor() {
+        if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    }
+
+    function bunyikanSuaraSukses() {
+        try {
+            bukaKunciAudioKonstruktor();
+            let ctx = globalAudioCtx;
+            let oscillator = ctx.createOscillator(); let gainNode = ctx.createGain();
+            oscillator.connect(gainNode); gainNode.connect(ctx.destination);
+            oscillator.type = 'sine'; oscillator.frequency.value = 1000; 
+            gainNode.gain.setValueAtTime(0.2, ctx.currentTime); 
+            oscillator.start(); oscillator.stop(ctx.currentTime + 0.1); 
+        } catch (e) {}
+    }
+
+    function bunyikanSuaraGagal() {
+        try {
+            bukaKunciAudioKonstruktor();
+            let ctx = globalAudioCtx;
+            let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
+            osc1.connect(gain1); gain1.connect(ctx.destination);
+            osc1.type = 'sawtooth'; osc1.frequency.value = 180; 
+            gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.25);
+        } catch (e) {}
+    }
+
+    function tampilkanNotifKustom(status, judul, deskripsi) {
+        const modal = document.getElementById('scan-modal');
+        const iconContainer = document.getElementById('scan-modal-icon');
+        const titleContainer = document.getElementById('scan-modal-title');
+        const descContainer = document.getElementById('scan-modal-desc');
+
+        clearTimeout(toastTimeout);
+        modal.className = "scan-notif-modal"; 
+
+        if (status === 'success') {
+            modal.classList.add('success-status');
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            titleContainer.style.color = "#1d4ed8";
+        } else {
+            modal.classList.add('error-status');
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            titleContainer.style.color = "#ef4444";
+        }
+
+        titleContainer.innerText = judul;
+        descContainer.innerText = deskripsi;
+        modal.classList.add('show');
+        toastTimeout = setTimeout(() => { modal.classList.remove('show'); }, 2500);
+    }
+
+    function ubahTemaSistem() {
+        if (document.documentElement.getAttribute('data-theme') === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            themeBtn.innerText = "🌙 Dark Mode";
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeBtn.innerText = "☀️ Light Mode";
+        }
+    }
+
+    function updateHariText() {
+        tarikDanCetakLaporan('semua');
+    }
+
+    function updateStatusInternet() {
+        if (navigator.onLine) {
+            netIndicator.innerText = "● Online";
+            netIndicator.className = "net-status online";
+            sinkronisasiDataOfflineKeCloud();
+        } else {
+            netIndicator.innerText = "● Offline";
+            netIndicator.className = "net-status offline";
+        }
+    }
+    window.addEventListener('online', updateStatusInternet);
+    window.addEventListener('offline', updateStatusInternet);
+
+    async function muatSemuaGenerus() {
+        const lokalGenerus = localStorage.getItem('cache_data_cai');
+        if (lokalGenerus) {
+            semuaDataGenerus = JSON.parse(lokalGenerus);
+        }
+        if (navigator.onLine) {
+            try {
+                let { data: masterCai, error } = await _supabase.from('data_cai').select('*');
+                if (!error && masterCai) { 
+                    semuaDataGenerus = masterCai; 
+                    localStorage.setItem('cache_data_cai', JSON.stringify(masterCai));
+                }
+            } catch (e) {
+                console.error("Gagal memuat dari Supabase:", e);
+            }
+        }
+    }
+    muatSemuaGenerus();
+
+    function cariNamaPintar(event) {
+        if (event) event.stopPropagation();
+        let keyword = searchInput.value.toLowerCase();
+        resultsBox.innerHTML = '';
+        if (keyword.length < 2) { 
+            resultsBox.style.display = 'none'; 
+            globalOverlay.style.display = 'none';
+            return; 
+        }
+
+        let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
+        
+        if(hasilFilter.length > 0) {
+            resultsBox.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            hasilFilter.forEach(g => {
+                let div = document.createElement('div'); div.className = 'search-item';
+                let infoTambahan = g.jenis_kelamin ? ` — [${g.jenis_kelamin}]` : '';
+                div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${(g.desa || '-').toUpperCase()}]`;
+                div.onclick = function(e) { 
+                    e.stopPropagation();
+                    searchInput.value = g.nama_lengkap; 
+                    selectedIdInput.value = g.id_generus; 
+                    resultsBox.style.display = 'none'; 
+                    globalOverlay.style.display = 'none';
+                };
+                resultsBox.appendChild(div);
+            });
+        } else {
+            resultsBox.style.display = 'block'; 
+            globalOverlay.style.display = 'block';
+            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; pointer-events:none;">Nama tidak ditemukan</div>';
+        }
+    }
+
+    async function onScanSuccess(decodedText) { 
+        if (pengunciScanAktif) return; pengunciScanAktif = true; 
+        await prosesAbsensi(decodedText, "Scan Barcode");
+        setTimeout(() => { pengunciScanAktif = false; }, 1500); 
+    }
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+    html5QrcodeScanner.render(onScanSuccess);
+
+    async function prosesAbsensi(idPeserta, metode) {
+        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idPeserta)) || { nama_lengkap: "ID: " + idPeserta, kelompok: "-" };
+        let waktuSekarang = new Date();
+        
+        let localLogs = JSON.parse(localStorage.getItem('absensi_cai_lokal') || '[]');
+        let riwayatGabungan = [...localLogs];
+        
+        if (navigator.onLine) {
+            try {
+                let { data: cloudLogs } = await _supabase
+                    .from('absensi_cai')
+                    .select('created_at')
+                    .eq('id_peserta', idPeserta); // FIX: Menggunakan id_peserta sesuai kolom database
+                if (cloudLogs) riwayatGabungan = riwayatGabungan.concat(cloudLogs);
+            } catch(e) {}
+        }
+
+        let logTerakhirSama = riwayatGabungan
+            .filter(l => l.created_at)
+            .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+        if (logTerakhirSama) {
+            let selisihJam = (waktuSekarang - new Date(logTerakhirSama.created_at)) / (1000 * 60 * 60);
+            if (selisihJam < 3) {
+                bunyikanSuaraGagal(); 
+                let sisaMenit = Math.ceil((3 - selisihJam) * 60);
+                tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
+                return; 
+            }
+        }
+
+        // FIX: Properti disesuaikan dengan skema tabel database di image_52258d.png
+        const dataAbsenBaru = { 
+            id_peserta: String(idPeserta),
+            nama: profil.nama_lengkap,
+            kelompok: profil.kelompok,
+            metode_input: metode, 
+            created_at: waktuSekarang.toISOString() 
+        };
+
+        localLogs.push(dataAbsenBaru);
+        localStorage.setItem('absensi_cai_lokal', JSON.stringify(localLogs));
+        bunyikanSuaraSukses();
+        
+        if (navigator.onLine) {
+            try {
+                let { error } = await _supabase.from('absensi_cai').insert([dataAbsenBaru]);
+                if (!error) {
+                    let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_cai_lokal') || '[]');
+                    logsSesudahUpload.pop(); 
+                    localStorage.setItem('absensi_cai_lokal', JSON.stringify(logsSesudahUpload));
+                    tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
+                    return;
+                }
+            } catch (err) {}
+        }
+        tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
+    }
+
+    function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
+
+    async function dapatkanDataGabungan() {
+        let logAbsen = [];
+        if (navigator.onLine) {
+            try {
+                let { data: logs, error } = await _supabase.from('absensi_cai').select('*');
+                if (!error && logs) logAbsen = logs;
+            } catch(e) {}
+        }
+
+        let localLogs = JSON.parse(localStorage.getItem('absensi_cai_lokal') || '[]');
+        
+        let gabunganSemua = [...logAbsen, ...localLogs];
+        let mapUnik = new Map();
+        gabunganSemua.forEach(item => {
+            let key = (item.id_peserta || item.id_generus) + "_" + item.created_at; // FIX: Fallback kompatibilitas key unik
+            mapUnik.set(key, item);
+        });
+        let logTerfilterFix = Array.from(mapUnik.values());
+
+        logTerfilterFix.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        let listTanggalUnik = [...new Set(logTerfilterFix.map(l => new Date(l.created_at).toDateString()))];
+
+        const filterHari = document.getElementById('filter-rekap-hari').value;
+
+        let logTerfilterwaktu = logTerfilterFix.filter(absen => {
+            let tglString = new Date(absen.created_at).toDateString();
+            let indeksHari = listTanggalUnik.indexOf(tglString) + 1; 
+            if (filterHari === "SEMUA") return true;
+            return String(indeksHari) === filterHari;
+        });
+
+        return logTerfilterwaktu.map(absen => {
+            let targetId = absen.id_peserta || absen.id_generus;
+            let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(targetId)); 
+            let tanggalObj = new Date(absen.created_at);
+            let tglString = tanggalObj.toDateString();
+            let nomorHari = listTanggalUnik.indexOf(tglString) + 1;
+
+            return {
+                id: targetId, 
+                name: absen.nama || (detail ? detail.nama_lengkap : "ID: " + targetId), 
+                kelompok: (absen.kelompok || (detail ? detail.kelompok : "-")).toUpperCase(),
+                desa: detail ? (detail.desa || "-").toUpperCase() : "-",
+                jk: detail ? (detail.jenis_kelamin || "-").toUpperCase() : "-", 
+                status: absen.metode_input,
+                metode: absen.metode_input,
+                hariKe: nomorHari,
+                waktu: tanggalObj.toLocaleTimeString('id-ID'),
+                tanggalLengkap: tanggalObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})
+            }
+        });
+    }
+
+    async function sinkronisasiDataOfflineKeCloud() {
+        if (!navigator.onLine) return;
+        let localLogs = JSON.parse(localStorage.getItem('absensi_cai_lokal') || '[]');
+        if (localLogs.length === 0) return;
+
+        let berhasilUploadCount = 0;
+        let logsSisaGagal = [];
+
+        for (let i = 0; i < localLogs.length; i++) {
+            try {
+                // Pastikan key terformat id_peserta sebelum push manual/otomatis
+                if(localLogs[i].id_generus && !localLogs[i].id_peserta) {
+                    localLogs[i].id_peserta = String(localLogs[i].id_generus);
+                    delete localLogs[i].id_generus;
+                }
+                let { error } = await _supabase.from('absensi_cai').insert([localLogs[i]]);
+                if (!error) berhasilUploadCount++;
+                else logsSisaGagal.push(localLogs[i]);
+            } catch (e) {
+                logsSisaGagal.push(localLogs[i]);
+            }
+        }
+        localStorage.setItem('absensi_cai_lokal', JSON.stringify(logsSisaGagal));
+        if (berhasilUploadCount > 0) {
+            tampilkanNotifKustom('success', 'Backup Otomatis', `${berhasilUploadCount} data lokal disinkronkan ke Cloud!`);
+        }
+    }
+
+    async function sinkronisasiManual() {
+        if (!navigator.onLine) return tampilkanNotifKustom('error', 'Gagal', 'Anda sedang offline.');
+        let localLogs = JSON.parse(localStorage.getItem('absensi_cai_lokal') || '[]');
+        if(localLogs.length === 0) return tampilkanNotifKustom('success', 'Sinkronisasi', 'Semua data lokal up-to-date.');
+        await sinkronisasiDataOfflineKeCloud();
+    }
+
+    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
+        dataAktifRekap = await dapatkanDataGabungan();
+        
+        if(dataAktifRekap.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Belum ada data presensi.');
+        
+        let container = document.getElementById('print-table-container');
+        let resumeContainer = document.getElementById('resume-kehadiran-container');
+        let areaCetak = document.getElementById('print-area'); 
+        
+        container.innerHTML = ""; resumeContainer.innerHTML = "";
+        
+        const txtHari = document.getElementById('filter-rekap-hari').options[document.getElementById('filter-rekap-hari').selectedIndex].text;
+        document.getElementById('cetak-judul-kegiatan').innerText = "Laporan Presensi: PERMATA CAI";
+        document.getElementById('cetak-waktu').innerText = `Filter: ${txtHari} | Cetak: ` + new Date().toLocaleString('id-ID');
+
+        let totalHadir = dataAktifRekap.filter(d => d.metode !== 'Izin').length;
+        let totalIzin = dataAktifRekap.filter(d => d.metode === 'Izin').length;
+        let totalLaki = dataAktifRekap.filter(d => d.jk.includes('LAKI')).length;
+        let totalPerempuan = dataAktifRekap.filter(d => d.jk.includes('PEREMPUAN') || d.jk.includes('PEREM')).length;
+        
+        resumeContainer.innerHTML = `
+            <div class="resume-kehadiran-box">
+                <div class="resume-row">
+                    <span style="color: var(--primary);">🔵 Total Hadir: ${totalHadir} Orang</span>
+                    <span style="color: var(--warning);">🟡 Total Izin: ${totalIzin} Orang</span>
+                </div>
+                <div class="resume-row" style="border-top: 1px dashed var(--border-color); padding-top: 6px; font-weight: normal; color: var(--text-muted);">
+                    <span>♂️ Laki-laki: <b>${totalLaki}</b></span>
+                    <span>♀️ Perempuan: <b>${totalPerempuan}</b></span>
+                </div>
+            </div>`;
+
+        if(jenis === 'semua') {
+            renderTabelRekapSemuaSistem();
+        } 
+        else if(jenis === 'desa') {
+            let rekapDesa = {};
+            dataAktifRekap.forEach(d => {
+                if(!rekapDesa[d.desa]) rekapDesa[d.desa] = { hadir: 0, izin: 0 };
+                if(d.metode === 'Izin') rekapDesa[d.desa].izin++; else rekapDesa[d.desa].hadir++;
+            });
+            
+            let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Desa</th><th style="text-align:center;">Hadir</th><th style="text-align:center;">Izin</th><th style="text-align:center;">Total</th></tr></thead><tbody>`;
+            let n=1; 
+            for(let d in rekapDesa) { 
+                let t = rekapDesa[d].hadir + rekapDesa[d].izin;
+                html += `<tr><td>${n++}</td><td style="font-weight:600;">${d}</td><td style="text-align:center; color:var(--primary); font-weight:700;">${rekapDesa[d].hadir}</td><td style="text-align:center; color:var(--warning); font-weight:700;">${rekapDesa[d].izin}</td><td style="text-align:center; font-weight:700; background:#f8fafc;">${t} Orang</td></tr>`; 
+            }
+            html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
+        }
+        else if(jenis === 'kelompok') {
+            let rekapKlp = {}; dataAktifRekap.forEach(d => { if(!rekapKlp[d.kelompok]) rekapKlp[d.kelompok]=[]; rekapKlp[d.kelompok].push(d); });
+            let html = ""; 
+            for(let k in rekapKlp) {
+                let hKlp = rekapKlp[k].filter(d => d.metode !== 'Izin').length;
+                let iKlp = rekapKlp[k].filter(d => d.metode === 'Izin').length;
+                
+                html += `<div class="print-box-wilayah">
+                            <h4 style="display:flex; justify-content:space-between; font-size:12px;">
+                                <span>KELOMPOK: ${k}</span>
+                                <span style="font-size:11px; text-transform:none; color:var(--text-muted);">Hadir: ${hKlp} | Izin: ${iKlp}</span>
+                            </h4>
+                            <table class="print-table">
+                                <thead><tr><th style="width:30px; text-align:center;">No</th><th>Nama Lengkap</th><th style="width:50px; text-align:center;">L/P</th><th>Status Absen</th><th>Hari & Waktu</th></tr></thead>
+                                <tbody>`;
+                rekapKlp[k].forEach((a, i) => { 
+                    let st = a.metode === 'Izin' ? '<span style="color:var(--warning); font-weight:700;">IZIN</span>' : '<span style="color:var(--primary); font-weight:700;">HADIR</span>';
+                    html += `<tr><td style="text-align:center;">${i+1}</td><td style="font-weight:600;">${a.name}</td><td style="text-align:center;">${a.jk.includes('PEREMPUAN')?'P':'L'}</td><td>${st} (${a.metode})</td><td>Hari Ke-${a.hariKe} (${a.tanggalLengkap} - ${a.waktu})</td></tr>`; 
+                });
+                html += `</tbody></table></div>`;
+            }
+            container.innerHTML = html; areaCetak.style.display = "block";
+        }
+        if(langsungPrint) window.print();
+    }
+
+    function renderTabelRekapSemuaSistem() {
+        let container = document.getElementById('print-table-container');
+        let areaCetak = document.getElementById('print-area');
+        let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px; text-align:center;">No</th>
+                            <th>Nama Lengkap</th>
+                            <th style="width:50px; text-align:center;">L/P</th>
+                            <th>Kelompok</th>
+                            <th>Desa</th>
+                            <th>Keterangan Absen</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        if(dataAktifRekap.length === 0) {
+            html += `<tr><td colspan="6" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data presensi.</td></tr>`;
+        } else {
+            dataAktifRekap.forEach((d, i) => { 
+                let labelStatusText = d.metode === 'Izin' ? '<span style="color:var(--warning); font-weight:600;">IZIN</span>' : '<span style="color:var(--primary); font-weight:600;">HADIR</span>';
+                html += `<tr>
+                    <td style="text-align:center;">${i+1}</td><td style="font-weight:600;">${d.name}</td><td style="text-align:center;">${d.jk.includes('PEREMPUAN')?'P':'L'}</td>
+                    <td>${d.kelompok}</td><td>${d.desa}</td><td>Hari Ke-${d.hariKe} — ${labelStatusText} (${d.waktu})</td>
+                </tr>`; 
+            });
+        }
+        html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
+    }
+
+    async function tarikRekapTotalLangsung() {
+        let logAbsen = [];
+        if (navigator.onLine) {
+            try {
+                let { data: remoteLogs } = await _supabase.from('absensi_cai').select('*');
+                if (remoteLogs) logAbsen = remoteLogs;
+            } catch(e) {}
+        }
+        
+        let localLogs = JSON.parse(localStorage.getItem('absensi_cai_lokal') || '[]');
+        let gabunganSemua = [...logAbsen, ...localLogs];
+        let mapUnik = new Map();
+        gabunganSemua.forEach(item => { 
+            let key = (item.id_peserta || item.id_generus) + "_" + item.created_at; 
+            mapUnik.set(key, item); 
+        }); 
+        
+        gabunganSemua.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        let listTanggalUnik = [...new Set(gabunganSemua.map(l => new Date(l.created_at).toDateString()))];
+
+        dataMentahTahunanLog = Array.from(mapUnik.values()).map(log => {
+            let tStr = new Date(log.created_at).toDateString();
+            let nHari = listTanggalUnik.indexOf(tStr) + 1;
+            return { ...log, hariKe: nHari };
+        });
+        
+        let listIdTerabsen = [...new Set(dataMentahTahunanLog.map(l => String(l.id_peserta || l.id_generus)))]; 
+        dataMasterTahunanOrang = semuaDataGenerus.filter(g => listIdTerabsen.includes(String(g.id_generus))); 
+
+        if(dataMasterTahunanOrang.length === 0) {
+            return tampilkanNotifKustom('error', 'Kosong', 'Belum ada data anggota yang terabsen.');
+        }
+
+        dataMasterTahunanOrang.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)); 
+
+        document.getElementById('cetak-judul-kegiatan').innerText = `REKAP TOTAL PRESENSI FULL ACARA: PERMATA CAI`;
+        document.getElementById('cetak-waktu').innerText = `Cetak: ` + new Date().toLocaleString('id-ID');
+        document.getElementById('resume-kehadiran-container').innerHTML = "";
+
+        let container = document.getElementById('print-table-container');
+        let areaCetak = document.getElementById('print-area');
+
+        let headerHariHtml = "";
+        for (let h = 1; h <= 10; h++) { headerHariHtml += `<th style="text-align:center; width:28px; font-size:10px;">H${h}</th>`; }
+
+        let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px; text-align:center;">No</th>
+                            <th>Nama Lengkap</th>
+                            <th>Kelompok</th>
+                            <th>Desa</th>
+                            ${headerHariHtml}
+                            <th style="text-align:center; width:40px; background:#f1f5f9; font-weight:700;">Hdr</th>
+                            <th style="text-align:center; width:40px; background:#fff5f5; font-weight:700;">Izn</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        dataMasterTahunanOrang.forEach((orang, idx) => {
+            let logOrang = dataMentahTahunanLog.filter(l => String(l.id_peserta || l.id_generus) === String(orang.id_generus)); 
+            html += `<tr>
+                        <td style="text-align:center;">${idx + 1}</td>
+                        <td style="font-weight:600;">${orang.nama_lengkap}</td> 
+                        <td>${(orang.kelompok || "-").toUpperCase()}</td>
+                        <td>${(orang.desa || "-").toUpperCase()}</td>`;
+            
+            let totalHadir = 0; let totalIzin = 0;
+            for (let h = 1; h <= 10; h++) {
+                let hadir = logOrang.some(l => l.hariKe === h && l.metode_input !== 'Izin');
+                let izin = logOrang.some(l => l.hariKe === h && l.metode_input === 'Izin');
+                
+                if (hadir) { html += `<td style="text-align:center; color:#1d4ed8; font-weight:700;">✔</td>`; totalHadir++; }
+                else if (izin) { html += `<td style="text-align:center; color:#0284c7; font-weight:700; font-size:8px;">IZN</td>`; totalIzin++; }
+                else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
+            }
+            html += `<td style="text-align:center; font-weight:700; background:#f8fafc; color:#1d4ed8;">${totalHadir}</td>
+                     <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}</td></tr>`;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
+    }
+
+    function tutupSemuaDropdownAman() {
+        resultsBox.style.display = 'none';
+        globalOverlay.style.display = 'none';
+    }
+
+    async function printSemuaOtomatis() {
+        await tarikDanCetakLaporan('semua', false);
+        setTimeout(() => { window.print(); }, 500);
+    }
+
+    async function eksporKeExcel() {
+        let dataMurni = await dapatkanDataGabungan();
+        let csv = "No,Nama Lengkap,Kelompok,Desa,Hari Ke,Waktu,Metode\n";
+        dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}",Hari Ke-${d.hariKe},"${d.waktu}","${d.metode}"\n`; });
+        let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_PERMATA_CAI.csv`; link.click();
+    }
+
+    updateStatusInternet();
+</script>
+</body>
+</html>
