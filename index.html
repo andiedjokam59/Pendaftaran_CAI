@@ -10,13 +10,13 @@
     
     <style>
         :root {
-            --primary: #047857;
-            --primary-hover: #065f46;
-            --bg-main: #f1f5f9;
+            --primary: #1e40af;
+            --primary-hover: #1e3a8a;
+            --bg-main: #eff6ff;
             --bg-card: #ffffff;
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
+            --border-color: #cbd5e1;
         }
 
         body {
@@ -33,7 +33,7 @@
             width: 100%; max-width: 420px;
             background: var(--bg-card);
             padding: 28px 24px; border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(30, 64, 175, 0.1);
             box-sizing: border-box;
             position: relative;
         }
@@ -50,14 +50,14 @@
         .gear-icon svg { width: 18px; height: 18px; fill: var(--text-muted); }
 
         .mode-badge {
-            display: none; background: #ea580c; color: white;
+            display: none; background: #2563eb; color: white;
             text-align: center; font-size: 11px; font-weight: 700;
             padding: 6px; border-radius: 8px; margin-bottom: 16px;
             text-transform: uppercase; letter-spacing: 0.5px;
             animation: fadeIn 0.3s ease-out;
         }
 
-        h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; }
+        h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; line-height: 1.3; }
         p.subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin: 0 0 24px 0; font-weight: 500; }
 
         .form-group { margin-bottom: 16px; }
@@ -70,34 +70,27 @@
             outline: none; transition: all 0.2s;
             font-family: inherit; color: var(--text-dark);
         }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15); }
         
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
         select:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
-        select option.opt-non-aktif {
-            color: #dc2626 !important;
-            font-weight: bold;
-        }
-
         .operator-search-panel {
-            display: none; background: #fff7ed; border: 1px solid #ffedd5;
+            display: none; background: #eff6ff; border: 1px solid #bfdbfe;
             padding: 14px; border-radius: 12px; margin-bottom: 16px;
             animation: fadeIn 0.3s ease-out;
         }
-
-        .dynamic-field { display: none; animation: fadeIn 0.3s ease-out; }
 
         .btn {
             width: 100%; padding: 14px; background: var(--primary);
             color: white; border: none; border-radius: 10px;
             font-weight: 600; font-size: 15px; cursor: pointer;
             transition: background 0.2s; margin-top: 8px;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
         }
         .btn:hover { background: var(--primary-hover); }
-        .btn-orange { background: #ea580c; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15); }
-        .btn-orange:hover { background: #c2410c; }
+        .btn-orange { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
+        .btn-orange:hover { background: #1d4ed8; }
         
         .btn-danger { background: #dc2626 !important; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2) !important; }
         .btn-danger:hover { background: #b91c1c !important; }
@@ -113,8 +106,13 @@
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
-        .preview-holder { margin-top: 16px; display: none; animation: fadeIn 0.3s ease-out; }
-        .preview-holder img { width: 100%; max-width: 280px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid var(--border-color); }
+        /* Solusi Alternatif Area Gambar */
+        .alternatif-download-box {
+            display: none; margin-top: 15px; padding: 12px;
+            background: #fff7ed; border: 1px dashed #f97316; border-radius: 10px;
+        }
+        .alternatif-download-box p { font-size: 11px; color: #ea580c; margin: 0 0 10px 0; font-weight: 500; }
+        .preview-idcard-img { width: 100%; max-width: 260px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -133,13 +131,20 @@
         .modal-overlay.active .modal-box { transform: scale(1); }
         .modal-title { font-size: 18px; font-weight: 700; margin: 0 0 8px 0; color: #1e293b; }
         .modal-message { font-size: 14px; color: #64748b; margin: 0 0 20px 0; line-height: 1.5; }
+        
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .modal-btn {
-            width: 100%; padding: 12px; background: var(--primary);
+            flex: 1; padding: 12px; background: var(--primary);
             color: white; border: none; border-radius: 8px;
             font-weight: 600; font-size: 14px; cursor: pointer;
             transition: background 0.2s;
         }
         .modal-btn:hover { background: var(--primary-hover); }
+        .modal-btn-secondary { background: #64748b; }
+        .modal-btn-secondary:hover { background: #475569; }
+        .modal-btn-danger { background: #dc2626; }
+        .modal-btn-danger:hover { background: #b91c1c; }
+        
         .modal-input { margin-bottom: 14px; text-align: center; font-size: 16px; letter-spacing: 2px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); width: 80%; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -155,17 +160,17 @@
         </svg>
     </div>
 
-    <div id="operator-badge" class="mode-badge">Mode Operator: Edit & Update Data</div>
+    <div id="operator-badge" class="mode-badge">Mode Operator: Edit & Hapus Data</div>
 
-    <h2 id="form-main-title">Pendaftaran Mandiri</h2>
+    <h2 id="form-main-title">PENDAFTARAN<br>PESERTA CAI</h2>
     <p class="subtitle">Muda-mudi Daerah Tawangmangu</p>
 
-    <!-- PANEL CARI OPERATOR: Alur diperbaiki mengikuti form utama -->
+    <!-- PANEL CARI OPERATOR -->
     <div id="panel-cari-operator" class="operator-search-panel">
-        <h4 style="margin: 0 0 10px 0; color: #c2410c; font-size: 13px; text-transform: uppercase;">Pencarian Data Anggota</h4>
+        <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 13px; text-transform: uppercase;">Pencarian Data Anggota</h4>
         
         <div class="form-group">
-            <label style="color: #c2410c;">1. Pilih Desa</label>
+            <label style="color: #1e40af;">1. Pilih Desa</label>
             <select id="cari_desa" onchange="handleCariDesaChange()">
                 <option value="">-- Pilih Desa --</option>
                 <option value="Bandardawung">Bandardawung</option>
@@ -176,17 +181,19 @@
         </div>
 
         <div class="form-group">
-            <label style="color: #c2410c;">2. Pilih Kelompok</label>
+            <label style="color: #1e40af;">2. Pilih Kelompok</label>
             <select id="cari_kelompok" onchange="loadDaftarNamaDariSupabase()" disabled>
                 <option value="">-- Pilih Kelompok --</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label style="color: #c2410c;">3. Cari / Ketik Nama Lengkap</label>
+            <label style="color: #1e40af;">3. Cari / Ketik Nama Lengkap</label>
             <input type="text" id="cari_nama_input" list="daftar_nama_datalist" placeholder="Pilih Desa & Kelompok dulu..." onchange="handleNamaManualSelect()" disabled>
             <datalist id="daftar_nama_datalist"></datalist>
         </div>
+        
+        <button class="btn btn-danger" style="margin-top: 4px;" onclick="konfirmasiHapusDataSystemModal()">Hapus Data Peserta Terpilih</button>
     </div>
     
     <div class="form-group">
@@ -205,29 +212,6 @@
             <option value="Laki-laki">Laki-laki</option>
             <option value="Perempuan">Perempuan</option>
         </select>
-    </div>
-
-    <div class="form-group">
-        <label for="status">Status</label>
-        <select id="status" onchange="handleStatusChange()">
-            <option value="Generus">Generus</option>
-            <option value="Pengurus">Pengurus</option>
-            <option value="MT">MT</option>
-        </select>
-    </div>
-
-    <div class="form-group dynamic-field" id="field-usia">
-        <label for="usia">Usia</label>
-        <select id="usia">
-            <option value="Pra Remaja">Pra Remaja</option>
-            <option value="Remaja">Remaja</option>
-            <option value="Usia Mandiri">Usia Mandiri</option>
-        </select>
-    </div>
-
-    <div class="form-group dynamic-field" id="field-dapukan">
-        <label for="input_dapukan">Dapukan</label>
-        <input type="text" id="input_dapukan" placeholder="Ketik dapukan..." onblur="formatKapital(this)">
     </div>
 
     <div class="form-group">
@@ -260,9 +244,10 @@
         <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
         <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
 
-        <div id="preview-container" class="preview-holder">
-            <p style="font-size: 12px; color: var(--text-muted); margin: 18px 0 14px 0;">Tekan tepat pada tengah gambar kartu selama 3 detik, pilih "Simpan Gambar":</p>
-            <img id="idcard-fallback-img" alt="ID Card Preview">
+        <!-- Solusi Alternatif jika tombol di atas gagal (Masalah No. 2) -->
+        <div id="alternatif-download-area" class="alternatif-download-box">
+            <p>⚠️ Gagal mendownload otomatis? Sesuai panduan, silakan tekan lama gambar di bawah ini, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Download Gambar"</b>.</p>
+            <img id="preview-idcard-img" class="preview-idcard-img" alt="ID Card Preview">
         </div>
     </div>
 </div>
@@ -272,7 +257,9 @@
         <div id="modal-title" class="modal-title">Pemberitahuan</div>
         <div id="modal-message" class="modal-message">Isi pesan di sini.</div>
         <div id="modal-input-container"></div>
-        <button id="modal-primary-btn" class="modal-btn" onclick="tutupModal()">OK</button>
+        <div id="modal-btn-group" class="modal-btn-group">
+            <button id="modal-primary-btn" class="modal-btn">OK</button>
+        </div>
     </div>
 </div>
 
@@ -280,9 +267,47 @@
     const PIN_OPERATOR = "354313"; 
     let modeForm = "DAFTAR"; 
     let mapNamaKeId = {}; 
-    let statusAsli = ""; 
+    let audioCtx = null;
 
-    // Data Wilayah Desa dan Kelompok (Kapital & Urut Abjad)
+    // Fungsi Pembentuk Suara Beep (Masalah No. 1)
+    function playBeep(type) {
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            if (type === 'success') {
+                // Bunyi "beep" tinggi ceria
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Nada A5
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'error') {
+                // Bunyi "buzz" rendah ganda
+                [0, 0.15].forEach((delay) => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.12);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + delay);
+                    osc.stop(audioCtx.currentTime + delay + 0.12);
+                });
+            }
+        } catch (e) {
+            console.log("Audio not supported or blocked by user gesture interaction.");
+        }
+    }
+
     const dataWilayah = {
         "Bandardawung": [
             "Bandardawung Barat", "Bandardawung Timur", "Dawung Atas", "Dawung Bawah", 
@@ -319,6 +344,10 @@
         document.getElementById('modal-title').innerText = judul;
         document.getElementById('modal-message').innerText = pesan;
         document.getElementById('modal-input-container').innerHTML = "";
+        
+        const btnGroup = document.getElementById('modal-btn-group');
+        btnGroup.innerHTML = `<button id="modal-primary-btn" class="modal-btn">OK</button>`;
+        
         const btn = document.getElementById('modal-primary-btn');
         btn.onclick = function() {
             tutupModal();
@@ -334,8 +363,10 @@
     function bukaAksesOperator() {
         document.getElementById('modal-title').innerText = "Akses Operator";
         document.getElementById('modal-message').innerText = "Masukkan PIN khusus operator kelompok:";
-        let htmlInput = `<input type="password" id="pin-input" class="modal-input" placeholder="******" maxlength="10">`;
-        document.getElementById('modal-input-container').innerHTML = htmlInput;
+        document.getElementById('modal-input-container').innerHTML = `<input type="password" id="pin-input" class="modal-input" placeholder="******" maxlength="10">`;
+
+        const btnGroup = document.getElementById('modal-btn-group');
+        btnGroup.innerHTML = `<button id="modal-primary-btn" class="modal-btn">Verifikasi</button>`;
 
         const btn = document.getElementById('modal-primary-btn');
         btn.onclick = function() {
@@ -344,6 +375,7 @@
                 tutupModal();
                 aktifkanModeUpdate();
             } else {
+                playBeep('error'); // Trigger Suara Gagal
                 tampilkanModal("Akses Ditolak", "PIN yang Anda masukkan salah!");
             }
         };
@@ -353,57 +385,38 @@
 
     function aktifkanModeUpdate() {
         modeForm = "UPDATE";
-        statusAsli = ""; 
-        
         document.getElementById('gear-btn-main').style.display = "none";
         document.getElementById('operator-badge').style.display = "block";
         document.getElementById('panel-cari-operator').style.display = "block";
         document.getElementById('btn-kembali-pendaftaran').style.display = "block"; 
-        document.getElementById('form-main-title').innerText = "Update Data Jama'ah";
+        document.getElementById('form-main-title').innerHTML = "UPDATE DATA PESERTA";
         
         document.getElementById('btn-daftar').innerText = "Simpan Perubahan Data";
         document.getElementById('btn-daftar').classList.add('btn-orange');
         document.getElementById('btn-daftar').style.display = "block";
         document.getElementById('result-section').style.display = "none";
 
-        let selectStatus = document.getElementById('status');
-        if (!document.getElementById('opt-status-nonaktif')) {
-            let optNonAktif = document.createElement('option');
-            optNonAktif.value = "Non Aktif";
-            optNonAktif.innerText = "Non Aktif (Hapus Data)";
-            optNonAktif.id = "opt-status-nonaktif";
-            optNonAktif.className = "opt-non-aktif";
-            selectStatus.appendChild(optNonAktif);
-        }
-
         kosongkanSemuaKolomForm();
-        tampilkanModal("Mode Operator Aktif", "Silakan pilih Desa terlebih dahulu, lalu pilih Kelompok untuk mencari nama jama'ah.");
+        tampilkanModal("Mode Operator Active", "Silakan pilih Desa dan Kelompok untuk mengedit atau menghapus data peserta.");
     }
 
     function aktifkanModeDaftar() {
         modeForm = "DAFTAR";
-        statusAsli = "";
-        
         document.getElementById('gear-btn-main').style.display = "flex";
         document.getElementById('operator-badge').style.display = "none";
         document.getElementById('panel-cari-operator').style.display = "none";
         document.getElementById('btn-kembali-pendaftaran').style.display = "none";
-        document.getElementById('form-main-title').innerText = "Pendaftaran Mandiri";
+        document.getElementById('form-main-title').innerHTML = "PENDAFTARAN<br>PESERTA CAI";
         
         document.getElementById('btn-daftar').innerText = "Kirim & Buat QR Code";
-        document.getElementById('btn-daftar').classList.remove('btn-orange', 'btn-danger');
+        document.getElementById('btn-daftar').classList.remove('btn-orange');
         document.getElementById('btn-daftar').style.display = "block";
         document.getElementById('result-section').style.display = "none";
 
-        let optNonAktif = document.getElementById('opt-status-nonaktif');
-        if (optNonAktif) { optNonAktif.remove(); }
-
         kosongkanSemuaKolomForm();
         buatIdOtomatis();
-        handleStatusChange();
     }
 
-    // Fungsi Logika Dropdown Pencarian Operator saat Desa Diubah[cite: 1]
     function handleCariDesaChange() {
         const desaSelect = document.getElementById('cari_desa');
         const kelompokSelect = document.getElementById('cari_kelompok');
@@ -427,7 +440,6 @@
         }
     }
 
-    // Memuat nama jama'ah dari Supabase berdasarkan Desa dan Kelompok terpilih[cite: 1]
     async function loadDaftarNamaDariSupabase() {
         let desaTerpilih = document.getElementById('cari_desa').value;
         let kelompokTerpilih = document.getElementById('cari_kelompok').value;
@@ -448,7 +460,7 @@
         inputNama.placeholder = "Ketik/pilih nama jamaah...";
 
         let { data, error } = await _supabase
-            .from('data_generus')
+            .from('data_cai')
             .select('id_generus, nama_lengkap')
             .eq('desa', desaTerpilih)
             .eq('kelompok', kelompokTerpilih)
@@ -474,11 +486,11 @@
         if (idTerpilih) {
             tarikDataAnggotaTerpilih(idTerpilih);
         } else if (namaKetik !== "") {
+            playBeep('error'); // Trigger Suara Gagal
             tampilkanModal("Data Tidak Ditemukan", "Nama tidak terdaftar di kombinasi desa & kelompok ini.");
         }
     }
 
-    // Fungsi Logika Dropdown Form Utama saat Desa Diubah[cite: 1]
     function handleDesaChange() {
         const desaSelect = document.getElementById('desa');
         const kelompokSelect = document.getElementById('kelompok');
@@ -500,7 +512,7 @@
 
     async function tarikDataAnggotaTerpilih(idTerpilih) {
         let { data, error } = await _supabase
-            .from('data_generus')
+            .from('data_cai')
             .select('*')
             .eq('id_generus', idTerpilih)
             .single();
@@ -510,177 +522,134 @@
         document.getElementById('id_generus').value = data.id_generus;
         document.getElementById('nama').value = data.nama_lengkap;
         document.getElementById('jenis_kelamin').value = data.jenis_kelamin;
-        document.getElementById('status').value = data.status;
-        
-        statusAsli = data.status;
         document.getElementById('result-section').style.display = "none";
-
-        handleStatusChange();
-
-        if (data.status === "Generus") {
-            document.getElementById('usia').value = data.usia_dapukan;
-        } else if (data.status === "Pengurus" || data.status === "MT/MS") {
-            document.getElementById('input_dapukan').value = data.usia_dapukan;
-        }
 
         document.getElementById('desa').value = data.desa;
         handleDesaChange();
         document.getElementById('kelompok').value = data.kelompok;
     }
 
+    function konfirmasiHapusDataSystemModal() {
+        let idGenerus = document.getElementById('id_generus').value.trim();
+        if(!idGenerus) {
+            playBeep('error');
+            return tampilkanModal("Pilih Data", "Silakan tentukan nama peserta yang ingin dihapus terlebih dahulu!");
+        }
+
+        document.getElementById('modal-title').innerText = "Konfirmasi Hapus";
+        document.getElementById('modal-message').innerText = "Apakah Anda yakin ingin menghapus data anggota dengan ID " + idGenerus + " secara permanen?";
+        document.getElementById('modal-input-container').innerHTML = "";
+        
+        const btnGroup = document.getElementById('modal-btn-group');
+        btnGroup.innerHTML = `
+            <button id="btn-modal-batal" class="modal-btn modal-btn-secondary">Cancel</button>
+            <button id="btn-modal-proses-hapus" class="modal-btn modal-btn-danger">OK</button>
+        `;
+
+        document.getElementById('btn-modal-batal').onclick = function() { tutupModal(); };
+        document.getElementById('btn-modal-proses-hapus').onclick = function() {
+            tutupModal();
+            eksekusiHapusData(idGenerus);
+        };
+
+        document.getElementById('custom-modal').classList.add('active');
+    }
+
+    async function eksekusiHapusData(idGenerus) {
+        let { error } = await _supabase
+            .from('data_cai')
+            .delete()
+            .eq('id_generus', idGenerus);
+
+        if (error) {
+            playBeep('error'); // Trigger Suara Gagal
+            tampilkanModal("Gagal Menghapus", error.message);
+        } else {
+            playBeep('success'); // Trigger Suara Berhasil
+            tampilkanModal("Data Terhapus!", "Anggota dengan ID " + idGenerus + " berhasil dihapus dari database.", function() {
+                kosongkanSemuaKolomForm();
+                loadDaftarNamaDariSupabase();
+            });
+        }
+    }
+
     function kosongkanSemuaKolomForm() {
         document.getElementById('id_generus').value = "";
         document.getElementById('nama').value = "";
         document.getElementById('jenis_kelamin').value = "Laki-laki";
-        document.getElementById('status').value = "Generus";
-        document.getElementById('usia').value = "PAUD";
-        document.getElementById('input_dapukan').value = "";
-        
-        // Reset Dropdown Form Utama
         document.getElementById('desa').value = "";
         handleDesaChange(); 
 
-        // Reset Dropdown Panel Cari Operator
         if(document.getElementById('cari_desa')) {
             document.getElementById('cari_desa').value = "";
             handleCariDesaChange();
         }
-
-        statusAsli = "";
-        handleStatusChange();
+        document.getElementById('alternatif-download-area').style.display = "none";
     }
 
     function buatIdOtomatis() {
         if(modeForm === "DAFTAR" && !document.getElementById('id_generus').value) {
             const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
-            document.getElementById('id_generus').value = "IQ" + angkaAcak;
+            document.getElementById('id_generus').value = angkaAcak;
         }
     }
 
-    function handleStatusChange() {
-        const statusValue = document.getElementById('status').value;
-        const btnDaftar = document.getElementById('btn-daftar');
-        
-        document.getElementById('field-usia').style.display = (statusValue === "Generus") ? "block" : "none";
-        document.getElementById('field-dapukan').style.display = (statusValue === "Pengurus" || statusValue === "MT/MS") ? "block" : "none";
-        
-        if (statusValue === "Non Aktif") {
-            btnDaftar.innerText = "Hapus Data Secara Permanen";
-            btnDaftar.classList.remove('btn-orange');
-            btnDaftar.classList.add('btn-danger');
-        } else if (modeForm === "UPDATE") {
-            btnDaftar.innerText = "Simpan Perubahan Data";
-            btnDaftar.classList.remove('btn-danger');
-            btnDaftar.classList.add('btn-orange');
-        }
-    }
-
-    window.onload = function() { buatIdOtomatis(); handleStatusChange(); };
+    window.onload = function() { buatIdOtomatis(); };
 
     async function prosesPendaftaranMandiri() {
         let idGenerus = document.getElementById('id_generus').value.trim();
         let nama = document.getElementById('nama').value.trim();
-        let status = document.getElementById('status').value;
         let desa = document.getElementById('desa').value;
         let kelompok = document.getElementById('kelompok').value;
         let btn = document.getElementById('btn-daftar');
 
-        if(!idGenerus || !nama) {
-            return tampilkanModal("Data Belum Lengkap", "Harap pilih nama jamaah terlebih dahulu sampai ID Anggota terisi!");
-        }
-
-        if (modeForm === "UPDATE" && status === "Non Aktif") {
-            btn.innerText = "Menghapus..."; btn.disabled = true;
-            
-            let { data, error } = await _supabase
-                .from('data_generus')
-                .delete()
-                .eq('id_generus', idGenerus)
-                .select();
-
-            if (error) {
-                tampilkanModal("Gagal Menghapus", "Terjadi kesalahan: " + error.message);
-                btn.innerText = "Hapus Data Secara Permanen"; btn.disabled = false;
-            } else if (!data || data.length === 0) {
-                tampilkanModal("Gagal Menghapus", "Data gagal dihapus. Periksa kembali kebijakan RLS DELETE di Supabase Anda.");
-                btn.innerText = "Hapus Data Secara Permanen"; btn.disabled = false;
-            } else {
-                tampilkanModal("Data Terhapus!", "Data anggota dengan ID " + idGenerus + " telah berhasil dihapus secara otomatis dari Supabase.", function() {
-                    kosongkanSemuaKolomForm();
-                    btn.disabled = false;
-                    loadDaftarNamaDariSupabase();
-                });
-            }
-            return;
-        }
-
-        if(!desa || !kelompok) {
-            return tampilkanModal("Data Belum Lengkap", "Harap lengkapi Desa dan Kelompok!");
-        }
-
-        let nilaiTambahan = "-";
-        if (status === "Generus") {
-            nilaiTambahan = document.getElementById('usia').value;
-        } else if (status === "Pengurus" || status === "MT/MS") {
-            nilaiTambahan = document.getElementById('input_dapukan').value.trim();
-            if (!nilaiTambahan) {
-                return tampilkanModal("Data Belum Lengkap", "Harap masukkan Dapukan!");
-            }
+        if(!idGenerus || !nama || !desa || !kelompok) {
+            playBeep('error'); // Trigger Suara Gagal
+            return tampilkanModal("Data Belum Lengkap", "Harap isi seluruh kolom formulir!");
         }
         
         btn.innerText = "Memproses..."; btn.disabled = true;
 
         if (modeForm === "DAFTAR") {
-            let { error } = await _supabase.from('data_generus').insert([{
-                id_generus: idGenerus, nama_lengkap: nama, jenis_kelamin: document.getElementById('jenis_kelamin').value,
-                status: status, usia_dapukan: nilaiTambahan, kelompok: kelompok, desa: desa
+            let { error } = await _supabase.from('data_cai').insert([{
+                id_generus: parseInt(idGenerus), 
+                nama_lengkap: nama, 
+                jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                kelompok: kelompok, 
+                desa: desa
             }]);
 
             if (error) {
-                tampilkanModal("Gagal Menyimpan", "Gagal mendaftar: " + error.message);
+                playBeep('error'); // Trigger Suara Gagal
+                tampilkanModal("Gagal Menyimpan", error.message);
                 btn.innerText = "Kirim & Buat QR Code"; btn.disabled = false;
             } else {
+                playBeep('success'); // Trigger Suara Berhasil
                 document.getElementById('result-title').innerText = "✓ Pendaftaran Berhasil!";
                 tampilkanQRCode(idGenerus, nama);
             }
         } else if (modeForm === "UPDATE") {
-            let { data, error } = await _supabase
-                .from('data_generus')
+            let { error } = await _supabase
+                .from('data_cai')
                 .update({
                     nama_lengkap: nama, 
                     jenis_kelamin: document.getElementById('jenis_kelamin').value,
-                    status: status, 
-                    usia_dapukan: nilaiTambahan, 
                     kelompok: kelompok, 
                     desa: desa
                 })
-                .eq('id_generus', idGenerus)
-                .select();
+                .eq('id_generus', parseInt(idGenerus));
 
             if (error) {
-                tampilkanModal("Gagal Perbarui", "Supabase Error: " + error.message);
-                btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
-            } else if (!data || data.length === 0) {
-                tampilkanModal("Database Tidak Berubah", "Gagal mengubah data. Pastikan izin UPDATE di RLS Supabase aktif.");
+                playBeep('error'); // Trigger Suara Gagal
+                tampilkanModal("Gagal Perbarui", error.message);
                 btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
             } else {
-                if (status !== statusAsli) {
-                    document.getElementById('result-title').innerText = "✓ Status Berubah & Berhasil Diperbarui!";
-                    tampilkanQRCode(idGenerus, nama);
-                    
-                    tampilkanModal("Pembaruan Berhasil!", "Data Anggota " + idGenerus + " berhasil diperbarui. Karena STATUS BERUBAH, gambar ID Card baru dengan status '" + status + "' siap disimpan di bawah.", function() {
-                        btn.disabled = false;
-                        statusAsli = status; 
-                        loadDaftarNamaDariSupabase();
-                    });
-                } else {
-                    document.getElementById('result-section').style.display = "none";
-                    
-                    tampilkanModal("Perubahan Disimpan", "Data Anggota " + idGenerus + " berhasil diperbarui. (QR Code tidak dibuat ulang karena tidak ada perubahan status).", function() {
-                        btn.disabled = false;
-                        loadDaftarNamaDariSupabase();
-                    });
-                }
+                playBeep('success'); // Trigger Suara Berhasil
+                document.getElementById('result-section').style.display = "none";
+                tampilkanModal("Perubahan Disimpan", "Data Anggota berhasil diperbarui.", function() {
+                    btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
+                    loadDaftarNamaDariSupabase();
+                });
             }
         }
     }
@@ -700,16 +669,51 @@
         if (modeForm === "DAFTAR") {
             document.getElementById('btn-daftar').style.display = "none";
         }
+
+        // Generate gambar alternatif pratinjau di awal untuk kenyamanan pengguna HP
+        siapkanGambarPratinjauAlternatif(idText, namaOrang);
+
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Fungsi membuat gambar pratinjau mentah untuk disalin/tekan lama oleh pengguna (Masalah No. 2)
+    function siapkanGambarPratinjauAlternatif(idText, namaOrang) {
+        setTimeout(() => {
+            let qrImgElement = document.getElementById("qr-image-src");
+            if(!qrImgElement) return;
+
+            let c = document.createElement("canvas");
+            let ctx = c.getContext("2d");
+            let imgBg = new Image();
+            imgBg.crossOrigin = "anonymous"; 
+            imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
+
+            imgBg.onload = function() {
+                c.width = imgBg.width; c.height = imgBg.height;
+                ctx.drawImage(imgBg, 0, 0);
+                ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
+                ctx.fillStyle = "#1e40af"; ctx.textAlign = "center";
+                
+                // DIRUBAH: Mengubah kata ID ANGGOTA menjadi ID PESERTA (Masalah No. 3)
+                ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.455);
+                
+                ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
+                ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
+                ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.87);
+                
+                let dataUrl = c.toDataURL("image/jpeg", 0.9);
+                document.getElementById('preview-idcard-img').src = dataUrl;
+            };
+        }, 500);
     }
 
     function unduhIDCard() {
         let idText = document.getElementById('id_generus').value.trim();
         let namaOrang = document.getElementById('nama').value.trim();
-        let statusUser = document.getElementById('status').value; 
-        let statusTeksFormasi = (statusUser === "Jama'ah Umum") ? "JAMA'AH" : statusUser.toUpperCase();
-
         let qrImgElement = document.getElementById("qr-image-src");
+
+        if(!qrImgElement) return;
+
         let c = document.createElement("canvas");
         let ctx = c.getContext("2d");
         let imgBg = new Image();
@@ -720,18 +724,34 @@
             c.width = imgBg.width; c.height = imgBg.height;
             ctx.drawImage(imgBg, 0, 0);
             ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
-            ctx.fillStyle = "#024731"; ctx.textAlign = "center";
-            ctx.fillText(`ID ${statusTeksFormasi}`, c.width / 2, c.height * 0.455);
+            ctx.fillStyle = "#1e40af"; ctx.textAlign = "center";
+            
+            // DIRUBAH: Mengubah kata ID ANGGOTA menjadi ID PESERTA (Masalah No. 3)
+            ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.455);
+            
             ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
             ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
             ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.87);
             
-            let dataUrl = c.toDataURL("image/jpeg", 0.9);
-            document.getElementById("idcard-fallback-img").src = dataUrl;
-            document.getElementById("preview-container").style.display = "block";
-            let link = document.createElement("a");
-            link.href = dataUrl; link.download = `ID_CARD_${statusTeksFormasi}_${idText}.jpg`; link.click();
+            try {
+                let dataUrl = c.toDataURL("image/jpeg", 0.9);
+                let link = document.createElement("a");
+                link.href = dataUrl; 
+                link.download = `ID_CARD_${idText}.jpg`; 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                // FALLBACK: Munculkan petunjuk Masalah No. 2 jika download diblokir sistem/browser HP
+                document.getElementById('alternatif-download-area').style.display = "block";
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
         };
+        
+        // Sebagai cadangan pengaman di HP Android/iOS WebView, box alternatif juga otomatis terbuka dalam 1 detik
+        setTimeout(() => {
+            document.getElementById('alternatif-download-area').style.display = "block";
+        }, 1000);
     }
 </script>
 </body>
