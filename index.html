@@ -244,7 +244,7 @@
         <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
         <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
 
-        <!-- Solusi Alternatif jika tombol di atas gagal (Masalah No. 2) -->
+        <!-- Solusi Alternatif jika tombol di atas gagal -->
         <div id="alternatif-download-area" class="alternatif-download-box">
             <p>⚠️ Gagal mendownload otomatis? Sesuai panduan, silakan tekan lama gambar di bawah ini, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Download Gambar"</b>.</p>
             <img id="preview-idcard-img" class="preview-idcard-img" alt="ID Card Preview">
@@ -269,7 +269,6 @@
     let mapNamaKeId = {}; 
     let audioCtx = null;
 
-    // Fungsi Pembentuk Suara Beep (Masalah No. 1)
     function playBeep(type) {
         try {
             if (!audioCtx) {
@@ -277,11 +276,10 @@
             }
             
             if (type === 'success') {
-                // Bunyi "beep" tinggi ceria
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Nada A5
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
                 gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.connect(gain);
@@ -289,7 +287,6 @@
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'error') {
-                // Bunyi "buzz" rendah ganda
                 [0, 0.15].forEach((delay) => {
                     let osc = audioCtx.createOscillator();
                     let gain = audioCtx.createGain();
@@ -375,7 +372,7 @@
                 tutupModal();
                 aktifkanModeUpdate();
             } else {
-                playBeep('error'); // Trigger Suara Gagal
+                playBeep('error'); 
                 tampilkanModal("Akses Ditolak", "PIN yang Anda masukkan salah!");
             }
         };
@@ -486,7 +483,7 @@
         if (idTerpilih) {
             tarikDataAnggotaTerpilih(idTerpilih);
         } else if (namaKetik !== "") {
-            playBeep('error'); // Trigger Suara Gagal
+            playBeep('error'); 
             tampilkanModal("Data Tidak Ditemukan", "Nama tidak terdaftar di kombinasi desa & kelompok ini.");
         }
     }
@@ -562,10 +559,10 @@
             .eq('id_generus', idGenerus);
 
         if (error) {
-            playBeep('error'); // Trigger Suara Gagal
+            playBeep('error'); 
             tampilkanModal("Gagal Menghapus", error.message);
         } else {
-            playBeep('success'); // Trigger Suara Berhasil
+            playBeep('success'); 
             tampilkanModal("Data Terhapus!", "Anggota dengan ID " + idGenerus + " berhasil dihapus dari database.", function() {
                 kosongkanSemuaKolomForm();
                 loadDaftarNamaDariSupabase();
@@ -604,27 +601,29 @@
         let btn = document.getElementById('btn-daftar');
 
         if(!idGenerus || !nama || !desa || !kelompok) {
-            playBeep('error'); // Trigger Suara Gagal
+            playBeep('error'); 
             return tampilkanModal("Data Belum Lengkap", "Harap isi seluruh kolom formulir!");
         }
         
         btn.innerText = "Memproses..."; btn.disabled = true;
 
         if (modeForm === "DAFTAR") {
+            // PERBAIKAN: Menambahkan properti status: "Peserta" agar tersimpan otomatis ke database
             let { error } = await _supabase.from('data_cai').insert([{
                 id_generus: parseInt(idGenerus), 
                 nama_lengkap: nama, 
                 jenis_kelamin: document.getElementById('jenis_kelamin').value,
                 kelompok: kelompok, 
-                desa: desa
+                desa: desa,
+                status: "Peserta"
             }]);
 
             if (error) {
-                playBeep('error'); // Trigger Suara Gagal
+                playBeep('error'); 
                 tampilkanModal("Gagal Menyimpan", error.message);
                 btn.innerText = "Kirim & Buat QR Code"; btn.disabled = false;
             } else {
-                playBeep('success'); // Trigger Suara Berhasil
+                playBeep('success'); 
                 document.getElementById('result-title').innerText = "✓ Pendaftaran Berhasil!";
                 tampilkanQRCode(idGenerus, nama);
             }
@@ -640,11 +639,11 @@
                 .eq('id_generus', parseInt(idGenerus));
 
             if (error) {
-                playBeep('error'); // Trigger Suara Gagal
+                playBeep('error'); 
                 tampilkanModal("Gagal Perbarui", error.message);
                 btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
             } else {
-                playBeep('success'); // Trigger Suara Berhasil
+                playBeep('success'); 
                 document.getElementById('result-section').style.display = "none";
                 tampilkanModal("Perubahan Disimpan", "Data Anggota berhasil diperbarui.", function() {
                     btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
@@ -670,13 +669,11 @@
             document.getElementById('btn-daftar').style.display = "none";
         }
 
-        // Generate gambar alternatif pratinjau di awal untuk kenyamanan pengguna HP
         siapkanGambarPratinjauAlternatif(idText, namaOrang);
 
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-    // Fungsi membuat gambar pratinjau mentah untuk disalin/tekan lama oleh pengguna (Masalah No. 2)
     function siapkanGambarPratinjauAlternatif(idText, namaOrang) {
         setTimeout(() => {
             let qrImgElement = document.getElementById("qr-image-src");
@@ -694,7 +691,6 @@
                 ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
                 ctx.fillStyle = "#1e40af"; ctx.textAlign = "center";
                 
-                // DIRUBAH: Mengubah kata ID ANGGOTA menjadi ID PESERTA (Masalah No. 3)
                 ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.455);
                 
                 ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
@@ -726,7 +722,6 @@
             ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
             ctx.fillStyle = "#1e40af"; ctx.textAlign = "center";
             
-            // DIRUBAH: Mengubah kata ID ANGGOTA menjadi ID PESERTA (Masalah No. 3)
             ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.455);
             
             ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
@@ -742,13 +737,11 @@
                 link.click();
                 document.body.removeChild(link);
             } catch (err) {
-                // FALLBACK: Munculkan petunjuk Masalah No. 2 jika download diblokir sistem/browser HP
                 document.getElementById('alternatif-download-area').style.display = "block";
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }
         };
         
-        // Sebagai cadangan pengaman di HP Android/iOS WebView, box alternatif juga otomatis terbuka dalam 1 detik
         setTimeout(() => {
             document.getElementById('alternatif-download-area').style.display = "block";
         }, 1000);
