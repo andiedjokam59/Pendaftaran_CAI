@@ -683,7 +683,7 @@
             let ctx = c.getContext("2d");
             let imgBg = new Image();
             imgBg.crossOrigin = "anonymous"; 
-            imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
+            imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/id_card_CAI_2026_v2.jpg"; 
 
             imgBg.onload = function() {
                 c.width = imgBg.width; c.height = imgBg.height;
@@ -691,11 +691,11 @@
                 ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
                 ctx.fillStyle = "#1e40af"; ctx.textAlign = "center";
                 
-                ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.455);
+                ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.375);
                 
-                ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
+                ctx.drawImage(qrImgElement, (c.width - (c.width * 0.41)) / 2, c.height * 0.41, c.width * 0.41, c.width * 0.41);
                 ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
-                ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.87);
+                ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.75);
                 
                 let dataUrl = c.toDataURL("image/jpeg", 0.9);
                 document.getElementById('preview-idcard-img').src = dataUrl;
@@ -714,7 +714,7 @@
         let ctx = c.getContext("2d");
         let imgBg = new Image();
         imgBg.crossOrigin = "anonymous"; 
-        imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
+        imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/id_card_CAI_2026_v2.jpg"; 
 
         imgBg.onload = function() {
             c.width = imgBg.width; c.height = imgBg.height;
@@ -722,11 +722,11 @@
             ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
             ctx.fillStyle = "#1e40af"; ctx.textAlign = "center";
             
-            ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.455);
+            ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.375);
             
-            ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
+            ctx.drawImage(qrImgElement, (c.width - (c.width * 0.41)) / 2, c.height * 0.41, c.width * 0.41, c.width * 0.41);
             ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
-            ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.87);
+            ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.75);
             
             try {
                 let dataUrl = c.toDataURL("image/jpeg", 0.9);
