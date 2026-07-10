@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pendaftaran Mandiri & QR Code</title>
-    <link rel="icon" type="image/png" href="https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/logo_cai.png">
-    <link rel="apple-touch-icon" href="https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/logo_cai.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -167,7 +165,6 @@
     <h2 id="form-main-title">PENDAFTARAN<br>PESERTA CAI</h2>
     <p class="subtitle">Muda-mudi Daerah Tawangmangu</p>
 
-    <!-- PANEL CARI OPERATOR -->
     <div id="panel-cari-operator" class="operator-search-panel">
         <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 13px; text-transform: uppercase;">Pencarian Data Anggota</h4>
         
@@ -243,10 +240,9 @@
         <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan simpan ID Card Anda.</p>
         
         <div id="qrcode-wrapper"><div id="qrcode"></div></div>
-        <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
+        <div id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark); line-height: 1.4;"></div>
         <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
 
-        <!-- Solusi Alternatif jika tombol di atas gagal -->
         <div id="alternatif-download-area" class="alternatif-download-box">
             <p>⚠️ Gagal mendownload otomatis? Sesuai panduan, silakan tekan lama gambar di bawah ini, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Download Gambar"</b>.</p>
             <img id="preview-idcard-img" class="preview-idcard-img" alt="ID Card Preview">
@@ -610,7 +606,6 @@
         btn.innerText = "Memproses..."; btn.disabled = true;
 
         if (modeForm === "DAFTAR") {
-            // PERBAIKAN: Menambahkan properti status: "Peserta" agar tersimpan otomatis ke database
             let { error } = await _supabase.from('data_cai').insert([{
                 id_generus: parseInt(idGenerus), 
                 nama_lengkap: nama, 
@@ -627,7 +622,7 @@
             } else {
                 playBeep('success'); 
                 document.getElementById('result-title').innerText = "✓ Pendaftaran Berhasil!";
-                tampilkanQRCode(idGenerus, nama);
+                tampilkanQRCode(idGenerus, nama, kelompok);
             }
         } else if (modeForm === "UPDATE") {
             let { error } = await _supabase
@@ -655,7 +650,7 @@
         }
     }
 
-    function tampilkanQRCode(idText, namaOrang) {
+    function tampilkanQRCode(idText, namaOrang, namaKelompok) {
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = "";
         let canvas = document.createElement("canvas");
@@ -664,19 +659,21 @@
         imgQr.src = canvas.toDataURL("image/png");
         imgQr.id = "qr-image-src";
         qrContainer.appendChild(imgQr);
-        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
+        
+        // Perubahan: Teks di bawah QR code halaman diubah menjadi Nama dan Kelompok (di bawahnya)
+        document.getElementById('qr-info').innerHTML = `${namaOrang}<br><span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Kelompok: ${namaKelompok}</span>`;
         document.getElementById('result-section').style.display = "block";
         
         if (modeForm === "DAFTAR") {
             document.getElementById('btn-daftar').style.display = "none";
         }
 
-        siapkanGambarPratinjauAlternatif(idText, namaOrang);
+        siapkanGambarPratinjauAlternatif(idText, namaOrang, namaKelompok);
 
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-    function siapkanGambarPratinjauAlternatif(idText, namaOrang) {
+    function siapkanGambarPratinjauAlternatif(idText, namaOrang, namaKelompok) {
         setTimeout(() => {
             let qrImgElement = document.getElementById("qr-image-src");
             if(!qrImgElement) return;
@@ -696,8 +693,15 @@
                 ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.375);
                 
                 ctx.drawImage(qrImgElement, (c.width - (c.width * 0.41)) / 2, c.height * 0.41, c.width * 0.41, c.width * 0.41);
-                ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
-                ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.75);
+                
+                // Perubahan: Menggambar Nama Peserta
+                ctx.font = `bold ${Math.round(c.width * 0.038)}px Inter`;
+                ctx.fillText(`${namaOrang.toUpperCase()}`, c.width / 2, c.height * 0.74);
+                
+                // Perubahan: Menggambar Nama Kelompok tepat di bawah nama peserta
+                ctx.font = `bold ${Math.round(c.width * 0.028)}px Inter`;
+                ctx.fillStyle = "#64748b";
+                ctx.fillText(`${namaKelompok.toUpperCase()}`, c.width / 2, c.height * 0.79);
                 
                 let dataUrl = c.toDataURL("image/jpeg", 0.9);
                 document.getElementById('preview-idcard-img').src = dataUrl;
@@ -708,6 +712,7 @@
     function unduhIDCard() {
         let idText = document.getElementById('id_generus').value.trim();
         let namaOrang = document.getElementById('nama').value.trim();
+        let namaKelompok = document.getElementById('kelompok').value;
         let qrImgElement = document.getElementById("qr-image-src");
 
         if(!qrImgElement) return;
@@ -727,8 +732,15 @@
             ctx.fillText(`ID PESERTA`, c.width / 2, c.height * 0.375);
             
             ctx.drawImage(qrImgElement, (c.width - (c.width * 0.41)) / 2, c.height * 0.41, c.width * 0.41, c.width * 0.41);
-            ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
-            ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.75);
+            
+            // Perubahan: Menggambar Nama Peserta saat diunduh
+            ctx.font = `bold ${Math.round(c.width * 0.038)}px Inter`;
+            ctx.fillText(`${namaOrang.toUpperCase()}`, c.width / 2, c.height * 0.74);
+            
+            // Perubahan: Menggambar Nama Kelompok tepat di bawah nama peserta saat diunduh
+            ctx.font = `bold ${Math.round(c.width * 0.028)}px Inter`;
+            ctx.fillStyle = "#64748b";
+            ctx.fillText(`${namaKelompok.toUpperCase()}`, c.width / 2, c.height * 0.79);
             
             try {
                 let dataUrl = c.toDataURL("image/jpeg", 0.9);
